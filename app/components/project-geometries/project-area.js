@@ -2,31 +2,8 @@ import Component from '@ember/component';
 import { argument } from '@ember-decorators/argument';
 import { action } from '@ember-decorators/object';
 import { service } from '@ember-decorators/service';
+import projectGeomLayers from '../../utils/project-geom-layers';
 
-// Project Area
-export const projectAreaLayer = {
-  id: 'project-area-line',
-  type: 'line',
-  layout: {
-    visibility: 'visible',
-  },
-  paint: {
-    'line-color': 'rgba(0, 122, 122, 1)',
-    'line-width': 2.5,
-    'line-dasharray': [3, 1],
-  },
-};
-
-export const projectAreaIcon = {
-  type: 'line',
-  layers: [
-    {
-      stroke: 'rgba(0, 122, 122, 1)',
-      'stroke-width': 1.25,
-      'stroke-dasharray': '3.25,1.75',
-    },
-  ],
-};
 
 export default class ProjectAreaComponent extends Component {
   @service
@@ -44,7 +21,9 @@ export default class ProjectAreaComponent extends Component {
   @argument
   mode;
 
-  projectAreaLayer = projectAreaLayer;
+  developmentSiteLayer = projectGeomLayers.developmentSiteLayer;
+
+  projectAreaLayer = projectGeomLayers.projectAreaLayer;
 
   @action
   async save(finalGeometry) {

@@ -25,6 +25,15 @@
   {{/map.source}}
 {{/if}}
 
+{{!-- Supporting Layers --}}
+
+{{#map.source options=(mapbox-geojson-source model.projectArea) as |source|}}
+  {{source.layer
+    layer=projectAreaLayer
+    before='boundary_country'
+  }}
+{{/map.source}}
+
 {{#map.source options=(mapbox-geojson-source model.developmentSite) as |source|}}
   {{source.layer
     layer=developmentSiteLayer

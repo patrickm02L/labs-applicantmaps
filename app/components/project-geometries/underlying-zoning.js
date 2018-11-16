@@ -2,6 +2,8 @@ import Component from '@ember/component';
 import { argument } from '@ember-decorators/argument';
 import { action } from '@ember-decorators/object';
 import { service } from '@ember-decorators/service';
+import projectGeomLayers from '../../utils/project-geom-layers';
+
 
 // Underlying Zoning
 export const underlyingZoningLayer = {
@@ -67,9 +69,13 @@ export default class UnderlyingZoningComponent extends Component {
   @service
   notificationMessages;
 
-  underlyingZoningLayer = underlyingZoningLayer;
+  developmentSiteLayer = projectGeomLayers.developmentSiteLayer;
 
-  underlyingZoningLabelsLayer = underlyingZoningLabelsLayer;
+  projectAreaLayer = projectGeomLayers.projectAreaLayer;
+
+  underlyingZoningLayer = projectGeomLayers.underlyingZoningLayer;
+
+  underlyingZoningLabelsLayer = projectGeomLayers.underlyingZoningLabelsLayer;
 
   @action
   async save(finalGeometry) {

@@ -2,6 +2,8 @@ import Component from '@ember/component';
 import { argument } from '@ember-decorators/argument';
 import { action } from '@ember-decorators/object';
 import { service } from '@ember-decorators/service';
+import projectGeomLayers from '../../utils/project-geom-layers';
+
 
 // Proposed Special Purpose Districts
 const proposedSpecialPurposeDistrictsLayer = {
@@ -66,6 +68,10 @@ export default class specialPurposeDistrictsComponent extends Component {
 
   @service
   notificationMessages;
+
+  developmentSiteLayer = projectGeomLayers.developmentSiteLayer;
+
+  projectAreaLayer = projectGeomLayers.projectAreaLayer;
 
   proposedSpecialPurposeDistrictsLayer = proposedSpecialPurposeDistrictsLayer;
 

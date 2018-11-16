@@ -2,6 +2,7 @@ import Component from '@ember/component';
 import { argument } from '@ember-decorators/argument';
 import { action } from '@ember-decorators/object';
 import { service } from '@ember-decorators/service';
+import projectGeomLayers from '../../utils/project-geom-layers';
 
 // Proposed Commercial Overlays
 
@@ -159,6 +160,10 @@ export default class ZoningDistrictComponent extends Component {
   c24Layer = c24Layer;
 
   c25Layer = c25Layer;
+
+  developmentSiteLayer = projectGeomLayers.developmentSiteLayer;
+
+  projectAreaLayer = projectGeomLayers.projectAreaLayer;
 
   @action
   async save(finalGeometry) {

@@ -13,7 +13,6 @@
   Explainer Text here
 {{/ember-wormhole}}
 
-{{!-- Ad-hoc source and layer for projectArea --}}
 {{#if (and model.projectArea (not-eq geometryMode 'projectArea'))}}
   {{#map.source options=(mapbox-geojson-source model.projectArea) as |source|}}
     {{source.layer
@@ -22,5 +21,12 @@
     }}
   {{/map.source}}
 {{/if}}
+
+{{#map.source options=(mapbox-geojson-source model.developmentSite) as |source|}}
+  {{source.layer
+    layer=developmentSiteLayer
+    before='boundary_country'
+  }}
+{{/map.source}}
 
 {{yield}}

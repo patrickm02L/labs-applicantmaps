@@ -2,16 +2,7 @@ import Component from '@ember/component';
 import { argument } from '@ember-decorators/argument';
 import { action } from '@ember-decorators/object';
 import { service } from '@ember-decorators/service';
-
-export const developmentSiteLayer = {
-  id: 'development-site-line',
-  type: 'line',
-  paint: {
-    'line-color': 'rgba(237, 18, 18, 1)',
-    'line-width': 4.5,
-    'line-dasharray': [2.5, 1, 1, 1],
-  },
-};
+import projectGeomLayers from '../../utils/project-geom-layers';
 
 export default class DevelopmentSiteComponent extends Component {
   @service
@@ -29,7 +20,7 @@ export default class DevelopmentSiteComponent extends Component {
   @argument
   mode;
 
-  developmentSiteLayer = developmentSiteLayer;
+  developmentSiteLayer = projectGeomLayers.developmentSiteLayer;
 
   @action
   async save(finalGeometry) {
