@@ -55,7 +55,7 @@ export default class ProjectMapFormComponent extends Component {
         },
         {
           id: 'zoning-districts',
-          visible: true,
+          visible: false,
           layers: [
             {
               highlightable: false,
@@ -85,7 +85,7 @@ export default class ProjectMapFormComponent extends Component {
         },
         {
           id: 'street-centerlines',
-          visible: true,
+          visible: false,
           layers: [
             {},
             {
@@ -116,6 +116,7 @@ export default class ProjectMapFormComponent extends Component {
       const { meta } = allLayerGroups;
       const layerGroups = allLayerGroups.filter(layerGroup => layerGroup.get('id') !== 'tax-lots');
 
+      console.log('setModel', layerGroups)
       this.set('model', {
         layerGroups,
         meta,
