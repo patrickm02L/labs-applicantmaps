@@ -34,24 +34,24 @@
           {{/if}}
 
           {{!-- Ad-hoc source and layer for projectArea --}}
-          {{#if model.projectArea}}
+{{!--           {{#if model.projectArea}}
             {{#map.source options=(mapbox-geojson-source model.projectArea) as |source|}}
               {{source.layer
                 layer=projectAreaLayer
                 before='boundary_country'
               }}
             {{/map.source}}
-          {{/if}}
+          {{/if}} --}}
 
           {{!-- Ad-hoc source and layer for rezoningArea --}}
-          {{#if model.rezoningArea}}
+{{!--           {{#if model.rezoningArea}}
             {{#map.source options=(mapbox-geojson-source model.rezoningArea) as |source|}}
               {{source.layer
                 layer=rezoningAreaLayer
                 before='boundary_country'
               }}
             {{/map.source}}
-          {{/if}}
+          {{/if}} --}}
       {{/mapbox-gl}}
 
     </div>

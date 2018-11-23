@@ -16,6 +16,8 @@ import {
   oneOf,
 } from '@ember-decorators/argument/type';
 import isEmpty from '../utils/is-empty';
+import unifyPolygons from '../utils/unify-polygons';
+import wizard from '../utils/wizard';
 import config from '../config/environment';
 
 const bufferMeters = 500;
@@ -46,7 +48,9 @@ const EmptyFeatureCollection = {
   features: [{
     type: 'Feature',
     geometry: null,
-    properties: {},
+    properties: {
+      isEmptyDefault: true,
+    },
   }],
 };
 
@@ -56,7 +60,7 @@ const Feature = shapeOf({
   properties: optional(Object),
 });
 
-const FeatureCollection = shapeOf({
+export const FeatureCollection = shapeOf({
   type: oneOf('FeatureCollection'),
   features: arrayOf(
     Feature,
@@ -64,13 +68,18 @@ const FeatureCollection = shapeOf({
 });
 
 export const INTERSECTING_ZONING_QUERY = async (developmentSite) => {
+  const unionedGeometryFragments = JSON
+    .stringify(
+      unifyPolygons(developmentSite),
+    );
+
   if (developmentSite) {
     // Get zoning districts
     const zoningQuery = `
       WITH buffer as (
         SELECT ST_SetSRID(
           ST_Buffer(
-            ST_GeomFromGeoJSON('${JSON.stringify(developmentSite)}')::geography,
+            ST_GeomFromGeoJSON('${unionedGeometryFragments}')::geography,
             ${bufferMeters}
           ),
         4326)::geometry AS the_geom
@@ -96,13 +105,18 @@ export const INTERSECTING_ZONING_QUERY = async (developmentSite) => {
 };
 
 export const PROPOSED_COMMERCIAL_OVERLAYS_QUERY = (developmentSite) => {
+  const unionedGeometryFragments = JSON
+    .stringify(
+      unifyPolygons(developmentSite),
+    );
+
   if (developmentSite) {
     // Get commercial overlays
     const commercialOverlaysQuery = `
       WITH buffer as (
         SELECT ST_SetSRID(
           ST_Buffer(
-            ST_GeomFromGeoJSON('${JSON.stringify(developmentSite)}')::geography,
+            ST_GeomFromGeoJSON('${unionedGeometryFragments}')::geography,
             ${bufferMeters}
           ),
         4326)::geometry AS the_geom
@@ -119,13 +133,18 @@ export const PROPOSED_COMMERCIAL_OVERLAYS_QUERY = (developmentSite) => {
 };
 
 export const PROPOSE_SPECIAL_DISTRICTS_QUERY = (developmentSite) => {
+  const unionedGeometryFragments = JSON
+    .stringify(
+      unifyPolygons(developmentSite),
+    );
+
   if (developmentSite) {
     // Get special purpose districts
     const specialPurposeDistrictsQuery = `
       WITH buffer as (
         SELECT ST_SetSRID(
           ST_Buffer(
-            ST_GeomFromGeoJSON('${JSON.stringify(developmentSite)}')::geography,
+            ST_GeomFromGeoJSON('${unionedGeometryFragments}')::geography,
             ${bufferMeters}
           ),
         4326)::geometry AS the_geom
@@ -187,7 +206,105 @@ export const REZONING_AREA_QUERY = (currentZoning, proposedZoning) => {
   return null;
 };
 
-const trueOrNull = property => property === true || property === null;
+const hasAnswered = property => property === true || property === false;
+const hasFilledOut = property => !isEmpty(property);
+// const optionalUnless = function(property, condition) {
+//   return this.get(condition) === true ? hasFilledOut(property) : true;
+// };
+
+export const projectProcedure = [
+  {
+    step: 'project-creation',
+    routing: {
+      route: 'projects.new',
+    },
+    conditions: {
+      projectName: hasFilledOut,
+    },
+  },
+  {
+    step: 'development-site',
+    routing: {
+      route: 'projects.edit.steps.development-site',
+    },
+    conditions: {
+      developmentSite: hasFilledOut,
+    },
+  },
+  {
+    step: 'project-area',
+    routing: {
+      route: 'projects.edit.steps.project-area',
+    },
+    conditions: {
+      needProjectArea: hasAnswered,
+      projectArea(property) {
+        return (this.get('needProjectArea') === true) ? hasFilledOut(property) : true;
+      },
+    },
+  },
+  {
+    step: 'rezoning',
+    routing: {
+      route: 'projects.edit.steps.rezoning',
+    },
+    conditions: {
+      needRezoning: hasAnswered,
+      needUnderlyingZoning: hasAnswered,
+      needCommercialOverlay: hasAnswered,
+      needSpecialDistrict: hasAnswered,
+    },
+  },
+  {
+    step: 'rezoning-underlying',
+    routing: {
+      route: 'projects.edit.geometry-edit',
+      mode: 'draw',
+      type: 'underlying-zoning',
+    },
+    conditions: {
+      needUnderlyingZoning: hasAnswered,
+      underlyingZoning(property) {
+        return (this.get('needUnderlyingZoning') === true) ? hasFilledOut(property) : true;
+      },
+    },
+  },
+  {
+    step: 'rezoning-commercial',
+    routing: {
+      route: 'projects.edit.geometry-edit',
+      mode: 'draw',
+      type: 'commercial-overlays',
+    },
+    conditions: {
+      needCommercialOverlay: hasAnswered,
+      commercialOverlays(property) {
+        return (this.get('needCommercialOverlay') === true) ? hasFilledOut(property) : true;
+      },
+    },
+  },
+  {
+    step: 'rezoning-special',
+    routing: {
+      route: 'projects.edit.geometry-edit',
+      mode: 'draw',
+      type: 'special-purpose-districts',
+    },
+    conditions: {
+      needSpecialDistrict: hasAnswered,
+      specialPurposeDistricts(property) {
+        return (this.get('needSpecialDistrict') === true) ? hasFilledOut(property) : true;
+      },
+    },
+  },
+  {
+    step: 'complete',
+    routing: {
+      label: 'complete',
+      route: 'projects.show',
+    },
+  },
+];
 
 export default class extends Model {
   @hasMany('area-map', { async: false }) areaMaps;
@@ -288,69 +405,8 @@ export default class extends Model {
 
   @computed(...fieldsForCurrentStep)
   get currentStep() {
-    const {
-      projectName,
-      developmentSite,
-      projectArea,
-      // rezoningArea,
-      underlyingZoning,
-      commercialOverlays,
-      specialPurposeDistricts,
-      needProjectArea,
-      needRezoning,
-      needUnderlyingZoning,
-      needCommercialOverlay,
-      needSpecialDistrict,
-    } = this.getProperties(...fieldsForCurrentStep);
-
-    if (isEmpty(projectName)) {
-      return { label: 'project-creation', route: 'projects.new' };
-    }
-
-    if (isEmpty(developmentSite)) {
-      return { label: 'development-site', route: 'projects.edit.steps.development-site' };
-    }
-
-    // questions
-    if (trueOrNull(needProjectArea) && isEmpty(projectArea)) {
-      return { label: 'project-area', route: 'projects.edit.steps.project-area' };
-    }
-
-    if (trueOrNull(needUnderlyingZoning) && needRezoning && isEmpty(underlyingZoning)) {
-      return {
-        label: 'rezoning-underlying',
-        route: 'projects.edit.geometry-edit',
-        mode: 'draw',
-        type: 'underlying-zoning',
-      };
-    }
-
-    if (trueOrNull(needCommercialOverlay) && needRezoning && isEmpty(commercialOverlays)) {
-      return {
-        label: 'rezoning-commercial',
-        route: 'projects.edit.geometry-edit',
-        mode: 'draw',
-        type: 'commercial-overlays',
-      };
-    }
-
-    if (trueOrNull(needSpecialDistrict) && needRezoning && isEmpty(specialPurposeDistricts)) {
-      return {
-        label: 'rezoning-special',
-        route: 'projects.edit.geometry-edit',
-        mode: 'draw',
-        type: 'special-purpose-districts',
-      };
-    }
-
-    if (trueOrNull(needRezoning)
-      || ((needUnderlyingZoning && isEmpty(underlyingZoning))
-        || (needCommercialOverlay && isEmpty(commercialOverlays))
-        || (needSpecialDistrict && isEmpty(specialPurposeDistricts)))) {
-      return { label: 'rezoning', route: 'projects.edit.steps.rezoning' };
-    }
-
-    return { label: 'complete', route: 'projects.show' };
+    const { routing } = wizard(projectProcedure, this);
+    return routing;
   }
 
   @computed('currentStep')
