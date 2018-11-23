@@ -5336,9 +5336,10 @@ ember-mapbox-composer@NYCPlanning/ember-mapbox-composer#d95dc6c99952fc45d6677bba
   version "0.0.19"
   resolved "https://codeload.github.com/NYCPlanning/ember-mapbox-composer/tar.gz/d95dc6c99952fc45d6677bba400424faf0be6170"
   dependencies:
-    "@ember-decorators/argument" "0.8.21"
     "@ember-decorators/babel-transforms" "^2.0.0"
+    "@turf/union" "^6.0.0"
     cartobox-promises-utility "1.0.2"
+    ember-auto-import "1.2.5"
     ember-cli-babel "^6.6.0"
     ember-cli-htmlbars "^2.0.1"
     ember-cli-htmlbars-inline-precompile "^1.0.0"
