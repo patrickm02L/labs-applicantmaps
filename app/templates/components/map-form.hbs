@@ -58,147 +58,152 @@
 
   <div class="cell large-auto paper-container text-center">
     <div class="paper {{model.paperSize}} {{model.paperOrientation}} padding-7mm text-left">
-      <div class="paper-grid grid-x">
-        <div class="cell paper-sidebar">
-          <div class="grid-y" style="height:100%;">
-            <div class="cell shrink">
-              <div class="grid-x">
-                <div class="cell auto">
-                  <h1 class="paper-project-name">{{model.project.projectName}} {{model.mapTypeLabel}}</h1>
-                  <h2 class="paper-applicant">{{model.project.applicantName}}</h2>
-                </div>
-                <div class="cell shrink">
-                  <div id="north-arrow-container">
-                    <div id="north-arrow" style={{northArrowTransforms.arrow}} />
-                    <div id="north-n" style={{northArrowTransforms.n}}><span class="n" style={{northArrowTransforms.nSpan}}>N</span></div>
+      {{#if (eq model.mapType 'area-map')}}
+        <div class="paper-grid grid-x">
+          <div class="cell paper-sidebar">
+            <div class="grid-y" style="height:100%;">
+              <div class="cell shrink">
+                <div class="grid-x">
+                  <div class="cell auto">
+                    <h1 class="paper-project-name">{{model.project.projectName}} {{model.mapTypeLabel}}</h1>
+                    <h2 class="paper-applicant">{{model.project.applicantName}}</h2>
+                  </div>
+                  <div class="cell shrink">
+                    <div id="north-arrow-container">
+                      <div id="north-arrow" style={{northArrowTransforms.arrow}} />
+                      <div id="north-n" style={{northArrowTransforms.n}}><span class="n" style={{northArrowTransforms.nSpan}}>N</span></div>
+                    </div>
                   </div>
                 </div>
+
               </div>
+              <div class="cell shrink legend">
+                {{yield}}
 
-            </div>
-            <div class="cell shrink legend">
-              {{yield}}
+                <section class="legend-section">
+                  <div class="data-sources">
+                    <strong>Data Sources:</strong>
+                    <a href="https://layers-api.planninglabs.nyc/v1/sources" target="_blank" class="nowrap black">layers-api.planninglabs.nyc/v1/sources</a>
+                    <br />
+                    {{#each mapConfiguration.sources as |source index|}}
+                      {{~if index ';'}}
+                      {{source.id}}
+                      {{if source.meta.updated_at (concat '(' source.meta.updated_at ')')~}}
+                    {{/each}}
+                  </div>
+                </section>
 
-              <section class="legend-section">
-                <div class="data-sources">
-                  <strong>Data Sources:</strong>
-                  <a href="https://layers-api.planninglabs.nyc/v1/sources" target="_blank" class="nowrap black">layers-api.planninglabs.nyc/v1/sources</a>
-                  <br />
-                  {{#each mapConfiguration.sources as |source index|}}
-                    {{~if index ';'}}
-                    {{source.id}}
-                    {{if source.meta.updated_at (concat '(' source.meta.updated_at ')')~}}
-                  {{/each}}
-                </div>
-              </section>
-
-            </div>
-            <div class="cell auto">
-              {{#if boundsPolygon}}
-                {{map-form/inset-map boundsPolygon=boundsPolygon}}
-              {{/if}}
+              </div>
+              <div class="cell auto">
+                {{#if boundsPolygon}}
+                  {{map-form/inset-map boundsPolygon=boundsPolygon}}
+                {{/if}}
+              </div>
             </div>
           </div>
+          <div class="cell auto">
+            {{#labs-map
+              id='main-map'
+              initOptions=(hash
+                style=mapConfiguration.meta.mapboxStyle
+
+              )
+              mapLoaded=(action 'handleMapLoaded') as |map|
+            }}
+              <div class="labs-map-loaded"></div>
+              {{map.labs-layers layerGroups=mapConfiguration.layerGroups}}
+
+              {{!-- Ad-hoc source and layer for showing commercial overlays --}}
+              {{#if model.project.commercialOverlays}}
+                {{#map.source options=(mapbox-geojson-source model.project.commercialOverlays) as |source|}}
+                  {{source.layer layer=projectGeomLayers.coLayer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c11Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c12Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c13Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c14Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c15Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c21Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c22Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c23Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c24Layer before='boundary_country'}}
+                  {{source.layer layer=projectGeomLayers.c25Layer before='boundary_country'}}
+                {{/map.source}}
+              {{/if}}
+
+              {{!-- Ad-hoc source and layer for showing commercial overlays --}}
+              {{#if model.project.proposedSpecialPurposeDistricts}}
+                {{#map.source options=(mapbox-geojson-source model.project.proposedSpecialPurposeDistricts) as |source|}}
+                  {{source.layer
+                    layer=projectGeomLayers.proposedSpecialPurposeDistrictsLayer
+                    before='boundary_country'
+                  }}
+                  {{source.layer
+                    layer=projectGeomLayers.proposedSpecialPurposeDistrictsLabelsLayer
+                    before='boundary_country'
+                  }}
+                {{/map.source}}
+              {{/if}}
+
+              {{#map.source options=(mapbox-geojson-source model.project.projectArea) as |source|}}
+                {{source.layer
+                  layer=projectGeomLayers.projectAreaLayer
+                  before='boundary_country'
+                }}
+              {{/map.source}}
+
+              {{#map.source options=(mapbox-geojson-source model.projectGeometryBuffer) as |source|}}
+                {{source.layer
+                  layer=projectGeomLayers.projectBufferLayer
+                  before='boundary_country'
+                }}
+              {{/map.source}}
+
+              {{#if model.project.rezoningArea}}
+                {{#map.source options=(mapbox-geojson-source model.project.rezoningArea) as |source|}}
+                  {{source.layer
+                    layer=projectGeomLayers.rezoningAreaLayer
+                    before='boundary_country'
+                  }}
+                {{/map.source}}
+              {{/if}}
+
+              {{#if model.project.underlyingZoning}}
+                {{#map.source options=(mapbox-geojson-source model.project.underlyingZoning) as |source|}}
+                  {{source.layer
+                    layer=projectGeomLayers.underlyingZoningLayer
+                    before='boundary_country'
+                  }}
+                  {{source.layer
+                    layer=projectGeomLayers.underlyingZoningLabelsLayer
+                    before='boundary_country'
+                  }}
+                {{/map.source}}
+              {{/if}}
+
+              {{#map.source options=(mapbox-geojson-source model.project.developmentSite) as |source|}}
+                {{source.layer
+                  layer=projectGeomLayers.developmentSiteLayer
+                  before='boundary_country'
+                }}
+              {{/map.source}}
+
+              {{map.on 'zoom' (action 'updateBounds')}}
+              {{map.on 'drag' (action 'updateBounds')}}
+              {{map.on 'pitch' (action 'updateBounds')}}
+              {{map.on 'rotate' (action 'updateBounds')}}
+            {{/labs-map}}
+
+            <p class="project-url-text text-right">
+              <a href="">{{projectURL}}</a>
+            </p>
+          </div>
+
         </div>
-        <div class="cell auto">
-          {{#labs-map
-            id='main-map'
-            initOptions=(hash
-              style=mapConfiguration.meta.mapboxStyle
-
-            )
-            mapLoaded=(action 'handleMapLoaded') as |map|
-          }}
-            <div class="labs-map-loaded"></div>
-            {{map.labs-layers layerGroups=mapConfiguration.layerGroups}}
-
-            {{!-- Ad-hoc source and layer for showing commercial overlays --}}
-            {{#if model.project.commercialOverlays}}
-              {{#map.source options=(mapbox-geojson-source model.project.commercialOverlays) as |source|}}
-                {{source.layer layer=projectGeomLayers.coLayer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c11Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c12Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c13Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c14Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c15Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c21Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c22Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c23Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c24Layer before='boundary_country'}}
-                {{source.layer layer=projectGeomLayers.c25Layer before='boundary_country'}}
-              {{/map.source}}
-            {{/if}}
-
-            {{!-- Ad-hoc source and layer for showing commercial overlays --}}
-            {{#if model.project.proposedSpecialPurposeDistricts}}
-              {{#map.source options=(mapbox-geojson-source model.project.proposedSpecialPurposeDistricts) as |source|}}
-                {{source.layer
-                  layer=projectGeomLayers.proposedSpecialPurposeDistrictsLayer
-                  before='boundary_country'
-                }}
-                {{source.layer
-                  layer=projectGeomLayers.proposedSpecialPurposeDistrictsLabelsLayer
-                  before='boundary_country'
-                }}
-              {{/map.source}}
-            {{/if}}
-
-            {{#map.source options=(mapbox-geojson-source model.project.projectArea) as |source|}}
-              {{source.layer
-                layer=projectGeomLayers.projectAreaLayer
-                before='boundary_country'
-              }}
-            {{/map.source}}
-
-            {{#map.source options=(mapbox-geojson-source model.projectGeometryBuffer) as |source|}}
-              {{source.layer
-                layer=projectGeomLayers.projectBufferLayer
-                before='boundary_country'
-              }}
-            {{/map.source}}
-
-            {{#if model.project.rezoningArea}}
-              {{#map.source options=(mapbox-geojson-source model.project.rezoningArea) as |source|}}
-                {{source.layer
-                  layer=projectGeomLayers.rezoningAreaLayer
-                  before='boundary_country'
-                }}
-              {{/map.source}}
-            {{/if}}
-
-            {{#if model.project.underlyingZoning}}
-              {{#map.source options=(mapbox-geojson-source model.project.underlyingZoning) as |source|}}
-                {{source.layer
-                  layer=projectGeomLayers.underlyingZoningLayer
-                  before='boundary_country'
-                }}
-                {{source.layer
-                  layer=projectGeomLayers.underlyingZoningLabelsLayer
-                  before='boundary_country'
-                }}
-              {{/map.source}}
-            {{/if}}
-
-            {{#map.source options=(mapbox-geojson-source model.project.developmentSite) as |source|}}
-              {{source.layer
-                layer=projectGeomLayers.developmentSiteLayer
-                before='boundary_country'
-              }}
-            {{/map.source}}
-
-            {{map.on 'zoom' (action 'updateBounds')}}
-            {{map.on 'drag' (action 'updateBounds')}}
-            {{map.on 'pitch' (action 'updateBounds')}}
-            {{map.on 'rotate' (action 'updateBounds')}}
-          {{/labs-map}}
-
-          <p class="project-url-text text-right">
-            <a href="">{{projectURL}}</a>
-          </p>
-        </div>
-
-      </div>
-
+      {{else}}
+        {{!-- embed tax map pdf --}}
+        <object data="http://gis.nyc.gov/taxmap/10092820170420085650.pdf?search={%22declaredClass%22:%22Sea%22,%22parameters%22:{%22searchType%22:%22pdf%22,%22inParentId%22:%2210092820170420085650%22}}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="100%">
+        </object>
+      {{/if}}
     </div>
     <div class="size-display"></div>
   </div>
