@@ -203,6 +203,96 @@
         {{!-- embed tax map pdf --}}
         <object data="http://gis.nyc.gov/taxmap/10092820170420085650.pdf?search={%22declaredClass%22:%22Sea%22,%22parameters%22:{%22searchType%22:%22pdf%22,%22inParentId%22:%2210092820170420085650%22}}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="100%">
         </object>
+        {{#labs-map
+          id='tax-map'
+          initOptions=(hash
+            style=mapConfiguration.meta.mapboxStyle
+
+          )
+          mapLoaded=(action 'handleTaxMapLoaded') as |map|
+        }}
+          <div class="labs-map-loaded"></div>
+          {{map.labs-layers layerGroups=mapConfiguration.layerGroups}}
+
+          {{!-- Ad-hoc source and layer for showing commercial overlays --}}
+          {{#if model.project.commercialOverlays}}
+            {{#map.source options=(mapbox-geojson-source model.project.commercialOverlays) as |source|}}
+              {{source.layer layer=projectGeomLayers.coLayer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c11Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c12Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c13Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c14Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c15Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c21Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c22Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c23Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c24Layer before='boundary_country'}}
+              {{source.layer layer=projectGeomLayers.c25Layer before='boundary_country'}}
+            {{/map.source}}
+          {{/if}}
+
+          {{!-- Ad-hoc source and layer for showing commercial overlays --}}
+          {{#if model.project.proposedSpecialPurposeDistricts}}
+            {{#map.source options=(mapbox-geojson-source model.project.proposedSpecialPurposeDistricts) as |source|}}
+              {{source.layer
+                layer=projectGeomLayers.proposedSpecialPurposeDistrictsLayer
+                before='boundary_country'
+              }}
+              {{source.layer
+                layer=projectGeomLayers.proposedSpecialPurposeDistrictsLabelsLayer
+                before='boundary_country'
+              }}
+            {{/map.source}}
+          {{/if}}
+
+          {{#map.source options=(mapbox-geojson-source model.project.projectArea) as |source|}}
+            {{source.layer
+              layer=projectGeomLayers.projectAreaLayer
+              before='boundary_country'
+            }}
+          {{/map.source}}
+
+          {{#map.source options=(mapbox-geojson-source model.projectGeometryBuffer) as |source|}}
+            {{source.layer
+              layer=projectGeomLayers.projectBufferLayer
+              before='boundary_country'
+            }}
+          {{/map.source}}
+
+          {{#if model.project.rezoningArea}}
+            {{#map.source options=(mapbox-geojson-source model.project.rezoningArea) as |source|}}
+              {{source.layer
+                layer=projectGeomLayers.rezoningAreaLayer
+                before='boundary_country'
+              }}
+            {{/map.source}}
+          {{/if}}
+
+          {{#if model.project.underlyingZoning}}
+            {{#map.source options=(mapbox-geojson-source model.project.underlyingZoning) as |source|}}
+              {{source.layer
+                layer=projectGeomLayers.underlyingZoningLayer
+                before='boundary_country'
+              }}
+              {{source.layer
+                layer=projectGeomLayers.underlyingZoningLabelsLayer
+                before='boundary_country'
+              }}
+            {{/map.source}}
+          {{/if}}
+
+          {{#map.source options=(mapbox-geojson-source model.project.developmentSite) as |source|}}
+            {{source.layer
+              layer=projectGeomLayers.developmentSiteLayer
+              before='boundary_country'
+            }}
+          {{/map.source}}
+
+          {{map.on 'zoom' (action 'updateBounds')}}
+          {{map.on 'drag' (action 'updateBounds')}}
+          {{map.on 'pitch' (action 'updateBounds')}}
+          {{map.on 'rotate' (action 'updateBounds')}}
+        {{/labs-map}}
       {{/if}}
     </div>
     <div class="size-display"></div>

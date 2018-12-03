@@ -8,6 +8,14 @@
   z-index: 1;
 }
 
+#tax-map {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  position: absolute;
+  top: 10px;
+}
+
 .mapboxgl-canvas {
   left: 0;
 }
