@@ -30,6 +30,15 @@ module.exports = function (defaults) {
               include: /node_modules\/@turf\/difference/,
               type: 'javascript/auto',
             },
+            {
+              test: /\.js?$/,
+              enforce: 'pre',
+              use: ['remove-flow-types-loader'],
+              include: [
+                /node_modules\/mapbox-gl-js-mock/,
+                /node_modules\/mapbox-gl/,
+              ],
+            },
           ],
         },
       },

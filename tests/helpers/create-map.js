@@ -1,5 +1,6 @@
 import { Promise } from 'rsvp';
 import MapboxGl from 'mapbox-gl';
+import MockMapboxGl from 'mapbox-gl-js-mock';
 import QUnit from 'qunit';
 import Config from '../../config/environment';
 

@@ -74,7 +74,9 @@
     "labs-ui": "^0.0.14",
     "loader.js": "^4.7.0",
     "mapbox-gl": "^0.50.0",
+    "mapbox-gl-js-mock": "1.0.2",
     "qunit-dom": "^0.7.1",
+    "remove-flow-types-loader": "1.1.0",
     "sinon": "7.1.1",
     "testem": "2.14.0"
   },
