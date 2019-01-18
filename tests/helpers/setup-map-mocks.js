@@ -17,10 +17,10 @@ export default function(hooks) {
       init(...args) {
         this._super(...args);
         this.get('mockMapService.maps').set(this.elementId, this);
-        registerWaiter(() => this.map);
+        registerWaiter(() => this._isMapLoaded);
       },
       willDestroyElement(...params) {
-        unregisterWaiter(() => this.map);
+        unregisterWaiter(() => this._isMapLoaded);
 
         this._super(...params);
       },
@@ -32,10 +32,10 @@ export default function(hooks) {
         this._super(...args);
 
         this.get('mockMapService.maps').set(this.elementId, this);
-        registerWaiter(() => this.map);
+        registerWaiter(() => this._isMapLoaded);
       },
       willDestroyElement(...params) {
-        unregisterWaiter(() => this.map);
+        unregisterWaiter(() => this._isMapLoaded);
 
         this._super(...params);
       },
